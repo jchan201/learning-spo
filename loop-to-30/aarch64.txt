@@ -1,0 +1,48 @@
+.text
+.globl _start
+
+
+/* starting value for the loop index */
+min = 0
+
+/* loop exits when the index hits this number */
+max = 30
+
+_start:
+        mov     x19,min                         /* loop index */
+
+loop:
+        adr     x20,msg        /* move string location to r20 */
+        add     x20,x20,idx      /* add index location to r20 */
+
+        mov     x28,x19          /* move data from r19 to r28 */
+        mov     x21,10                      /* move 10 to r21 */
+        udiv    x28,x28,x21              /* divide r28 by r21 */
+         /* calculate remainder of r19 - (r28 * r21) into r27 */
+        msub    x27,x28,x21,x19
+
+        add     x28,x28, 48                  /* add 48 to r28 */
+        add     x27,x27, 48                  /* add 48 to r27 */
+        strb    w28,[x20,0]         /* insert r28 to location */
+        add     x20,x20,1                    /* increment r20 */
+        strb    w27,[x20,0]         /* insert r27 to location */
+
+        mov     x0,1                /* file descriptor stdout */
+        adr     x1,msg   /* message location (memory address) */
+        mov     x2,len              /* message length (bytes) */
+
+        mov     x8,64                 /* write is syscall #64 */
+        svc     0                           /* invoke syscall */
+
+        add     x19,x19,1                  /* increment index */
+        cmp     x19,max                  /* see if we're done */
+        bne     loop                     /* loop if we're not */
+
+        mov     x8,93                  /* exit is syscall #93 */
+        svc     0                           /* invoke syscall */
+
+.data
+
+msg:    .ascii  "Loop: $$\n"
+        len = . - msg
+        idx = 6

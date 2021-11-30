@@ -1,0 +1,45 @@
+.text
+.globl  _start
+
+/* starting value for the loop index */
+min = 0
+/* loop exits when the index hits this number */
+max = 30
+
+_start:
+        mov     $min,%r15       /* loop index */
+
+loop:
+        mov     $msg,%r8         /* move string location to r8 */
+        add     $idx,%r8           /* add index location to r8 */
+
+        mov     %r15,%rax         /* move data from r15 to rax */
+        mov     $10, %r12                    /* move 10 to r12 */
+        div     %r12                      /* divide rax by r12 */
+
+        add     $48,%rax   /* add 48 to rax (convert to ascii) */
+        add     $48,%rdx   /* add 48 to rdx (convert to ascii) */
+        mov     %al,(%r8)         /* insert number to location */
+        inc     %r8                            /* increment r8 */
+        mov     %dl,(%r8)         /* insert number to location */
+
+        mov     $len,%rdx                    /* message length */
+        mov     $msg,%rsi            /* file descriptor stdout */
+        mov     $1,%rdi                   /* syscall sys_write */
+        mov     $1,%rax
+        syscall
+
+        inc     %r15                        /* increment index */
+        mov     $0,%rdx                      /* reset rdx to 0 */
+        cmp     $max,%r15                 /* see if we're done */
+        jne     loop                      /* loop if we're not */
+
+        mov     $0,%rdi                         /* exit status */
+        mov     $60,%rax                   /* syscall sys_exit */
+        syscall
+
+.section .data
+
+msg:    .ascii  "Loop: $$\n"
+        len = . - msg
+        idx = 6
